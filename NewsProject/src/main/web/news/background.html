@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>新闻管理系统后端</title>
+
+
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <!-- 新 Bootstrap5 核心 CSS 文件 -->
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/5.1.1/css/bootstrap.min.css">
+
+    <!--  popper.min.js 用于弹窗、提示、下拉菜单 -->
+    <script src="https://cdn.staticfile.org/popper.js/2.9.3/umd/popper.min.js"></script>
+
+    <!-- 最新的 Bootstrap5 核心 JavaScript 文件 -->
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/5.1.1/js/bootstrap.min.js"></script>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <style>
+        .el-row {
+            margin-bottom: 20px;
+        }
+
+        .last-child {
+            margin-bottom: 0;
+        }
+
+
+        .el-col {
+            border-radius: 4px;
+        }
+
+        .bg-purple-dark {
+            background: #99a9bf;
+        }
+
+        .bg-purple {
+            background: #d3dce6;
+        }
+
+        .bg-purple-light {
+            background: #e5e9f2;
+        }
+
+        .grid-content {
+            border-radius: 4px;
+            min-height: 36px;
+        }
+
+        .row-bg {
+            padding: 10px 0;
+            background-color: #f9fafc;
+        }
+    </style>
+</head>
+
+<body>
+<div id="app">
+    <nav class="navbar navbar-expand-sm navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="../index.html">新闻管理后台</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mynavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="mynavbar">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="../index.html">新闻首页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./background.html">我的新闻</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" @click="clickCreate" href="javascript:void(0)">创建新闻</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" @click="alert('欢迎您：'+username)"
+                           href="javascript:void(0)">当前用户：{{ username }}</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="../login.html">退出登录</a>
+                    </li>
+
+                </ul>
+                <form class="d-flex">
+                    <input v-model:value="searchStr" class="form-control me-2" type="text" placeholder="输入新闻关键字">
+                    <button class="btn btn-primary" type="button">Search</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+
+    <div class="container mt-3">
+        <!-- <h2>条纹表格</h2>
+    <p>通过添加 .table-striped 类，来设置条纹表格:</p>             -->
+        <table class="table table-striped " style="table-layout: fixed;word-break:break-all;">
+            <thead>
+            <tr>
+                <th style="width: 10%;">序号</th>
+                <th style="width: 60%;">新闻标题</th>
+                <th style="width: 15%;">发布时间</th>
+                <th style="width: 20%;">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="(news, index) in newsArr" id="index">
+                <td>{{ index + 1 }}</td>
+                <td>{{ news['newsTitle'] }}</td>
+                <td>{{ formatDate(news['newsTimestamp']) }}</td>
+                <td>
+                    <button @click="clickCheck($event,news['newsId'])" type="button" class="btn btn-primary">查看
+                    </button>
+                    <button @click="clickUpdate($event,news['newsId'])" type="button" class="btn btn-warning">修改
+                    </button>
+                    <button @click="clickDelete($event,news['newsId'])" type="button" class="btn btn-danger">删除
+                    </button>
+                </td>
+            </tr>
+
+            </tbody>
+        </table>
+    </div>
+
+</div>
+<script src="../js/news-util.js"></script>
+<script>
+    const vm = new Vue({
+            el: '#app',
+            data: {
+                newsArr: [],
+                searchStr: "",
+                username: "",
+                userId: "",
+            },
+            mounted() {
+                this.getUsername()
+                this.getNewsArr()
+
+            },
+            methods: {
+                getUsername() {
+                    let userId = this.userId = getUrlParam("userId");
+                    $.ajax({
+                        url: '/user/' + this.userId,
+                        method: 'GET',
+                        data: {},
+                        success: ({data}) => {
+                            // console.log(data)
+                            this.username = data['username']
+                        }
+                    })
+                },
+                getNewsArr() {
+                    $.ajax({
+                        url: '/news/all/' + this.userId,
+                        method: 'GET',
+                        data: {
+
+                        },
+                        success: (result) => {
+                            console.log(result)
+                            this.newsArr = result['data']
+                        }
+                    })
+                },
+                formatDate(newsTimestamp) {
+                    let dateObj = new Date(newsTimestamp)
+                    return dateObj.toLocaleString()
+                },
+                clickDelete(event, newsId) {
+                    let ifConfig = confirm("确认要删除这条新闻吗？");
+                    // console.log(ifConfig)
+                    // console.log(newsId)
+                    if (ifConfig) {
+                        $.ajax({
+                            url: '/news/' + newsId,
+                            method: 'DELETE',
+                            data: {},
+                            success: ({code}) => {
+                                if (code === 20021) {
+                                    alert("删除成功");
+                                    this.getNewsArr()
+                                } else {
+                                    alert("删除失败");
+                                    this.getNewsArr()
+                                }
+                            },
+                            error: (res) => {
+
+                                alert("删除失败");
+                                this.getNewsArr()
+                            }
+                        })
+                    }
+                },
+                clickUpdate(event, newsId) {
+                    window.location = "./editpage.html?newsId=" + newsId+"&userId="+this.userId
+                },
+                clickCheck(event, newsId) {
+                    window.location = "http://localhost/news.html?newsId=" + newsId
+                },
+
+                clickCreate(event, newsId) {
+                    window.location = "./editpage.html?userId="+this.userId
+                }
+            },
+        })
+
+
+
+
+</script>
+</body>
+
+</html>

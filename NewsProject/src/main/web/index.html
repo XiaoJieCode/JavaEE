@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新闻首页</title>
+
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <!-- 新 Bootstrap5 核心 CSS 文件 -->
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/5.1.1/css/bootstrap.min.css">
+
+    <!--  popper.min.js 用于弹窗、提示、下拉菜单 -->
+    <script src="https://cdn.staticfile.org/popper.js/2.9.3/umd/popper.min.js"></script>
+
+    <!-- 最新的 Bootstrap5 核心 JavaScript 文件 -->
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/5.1.1/js/bootstrap.min.js"></script>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <style>
+
+
+        #app {
+            display: flex;
+
+        }
+
+        .left, .right {
+            flex: 2;
+        }
+
+        .center {
+            flex: 6;
+        }
+
+        .news-title-ul {
+            align-items: center;
+        }
+
+        .news-ul-head {
+            text-align: center;
+
+        }
+
+        /* li {*/
+        /*    margin-left: 50px;*/
+        /*}*/
+
+        .news-ul-head {
+            font-size: 40px;
+        }
+
+        .news-title-ul {
+            font-size: 20px;
+            color: indianred;
+        }
+
+
+    </style>
+</head>
+
+<body>
+
+
+<div id="app">
+
+    <div class="left"></div>
+    <!--    <div id="loading" class="container mt-3">-->
+    <!--&lt;!&ndash;        <h2 id="loading-text">加载中...</h2>&ndash;&gt;-->
+    <!--&lt;!&ndash;        <div class="progress">&ndash;&gt;-->
+    <!--&lt;!&ndash;            <div class="progress-bar" id="progress-bar" style="width:0%"></div>&ndash;&gt;-->
+    <!--        </div>-->
+
+    <div class="center">
+
+        <h1 class="news-ul-head my-4 bg-dark  text-white">
+            ALL &nbsp&nbsp NEWS
+        </h1>
+        <div id="search-input">
+            <input class="form-control" type="search" id="search" placeholder="请输入关键字">
+            <ul class="list-group">
+                <li id="news-li" class="alert alert-success" v-for="n in news">
+                    <a v-bind:href="'/news.html?newsId='+n['newsId']">
+                        {{ n['newsDesc'] }}
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+        <hr/>
+        <div class="news-title-div">
+            <ul class=" news-title-ul">
+                <li v-for="element in news2">
+                    <div class="alert alert-info mt-1">
+                        <a style="text-decoration: none" v-bind:href="'/news.html?newsId='+element['newsId']">
+                            <h3>{{ element["newsTitle"] }}</h3>
+                            <h4>{{ element['newsDesc'] }}</h4>
+                        </a>
+                    </div>
+                    <!--                </h2>-->
+
+                    <br>
+                </li>
+            </ul>
+        </div>
+
+
+        <!--    <fieldset class="layui-elem-field layui-field-title">-->
+        <!--        <legend>富文本编辑器</legend>-->
+        <!--    </fieldset>-->
+
+        <!--    <textarea class="layui-textarea" id="LAY_demo1">-->
+        <!--  输入新闻主体内容-->
+        <!--        </textarea>-->
+
+        <!--    <div class="site-demo-button" style="margin-top: 20px;">-->
+        <!--        <button class="layui-btn site-demo-layedit" data-type="content">获取编辑器内容</button>-->
+        <!--        <button class="layui-btn site-demo-layedit" data-type="text">获取编辑器纯文本内容</button>-->
+        <!--        <button class="layui-btn site-demo-layedit" data-type="selection">获取编辑器选中内容</button>-->
+        <!--    </div>-->
+
+
+        <!--    <script src="./layui/layui.js" charset="utf-8"></script>-->
+        <!--    <script>-->
+        <!--        layui.use('layedit', function () {-->
+        <!--            var layedit = layui.layedit-->
+        <!--                , $ = layui.jquery;-->
+
+        <!--            //构建一个默认的编辑器-->
+        <!--            var index = layedit.build('LAY_demo1');-->
+
+        <!--            //编辑器外部操作-->
+        <!--            var active = {-->
+        <!--                content: function () {-->
+        <!--                    alert(layedit.getContent(index)); //获取编辑器内容-->
+        <!--                }-->
+        <!--                , text: function () {-->
+        <!--                    alert(layedit.getText(index)); //获取编辑器纯文本内容-->
+        <!--                }-->
+        <!--                , selection: function () {-->
+        <!--                    alert(layedit.getSelection(index));-->
+        <!--                }-->
+        <!--            };-->
+
+        <!--            $('.site-demo-layedit').on('click', function () {-->
+        <!--                var type = $(this).data('type');-->
+        <!--                active[type] ? active[type].call(this) : '';-->
+        <!--            });-->
+
+        <!--            //自定义工具栏-->
+        <!--            layedit.build('LAY_demo2', {-->
+        <!--                tool: ['face', 'link', 'unlink', '|', 'left', 'center', 'right']-->
+        <!--                , height: 100-->
+        <!--            })-->
+        <!--        });-->
+        <!--    </script>-->
+    </div>
+    <div class="right"></div>
+</div>
+</body>
+<script>
+    const vm = new Vue({
+        el: "#app",
+        data: {
+            news: [],
+            news2: []
+        },
+        methods: {}
+    })
+    const search = document.querySelector('#search');
+    // 获取提示文字的存放容器
+    const listBox = document.querySelector('.list-group');
+    let timer = null;
+    // 当用户在文本框中输入的时候触发
+    search.oninput = function () {
+        clearTimeout(timer);
+        const key = this.value;
+        if (key.trim() === '') {
+            listBox.style.display = 'none';
+            return;
+        }
+        // 向服务器端发送请求
+        // 向服务器端索取和用户输入关键字相关的内容
+        timer = setTimeout(function () {
+            $.ajax({
+                type: 'GET',
+                url: '/news/like',
+                data: {
+                    newsName: key
+                },
+                success: function ({data: data}) {
+
+                    // listBox.innerHTML = res.data;
+
+                    vm.news = data
+                    listBox.style.display = 'block';
+                },
+                error: function (res) {
+                    console.log("服务器访问失败:" + res.message)
+                }
+            })
+        }, 300);
+    }
+
+    $(function () {
+        $(".center").css("display", "none")
+        $.ajax({
+            url: "/news/all",
+            method: "GET",
+            data: null,
+            success:
+                function (res) {
+                    console.log(res)
+                    let newsArray = res["data"]
+                    if (newsArray === null || newsArray === undefined) {
+                        alert(res['message'])
+                        return
+                    }
+                    vm.news2 = newsArray
+
+                }
+        })
+
+        // let progress = $("#progress-bar")
+        // let loading_text = $("#loading-text")
+        /* for (let i = 0; i <= 100; i++) {
+             setTimeout(()=>{
+                 progress.css("width",i+"%")
+                 progress[0].innerHTML = `<h4>${i}%</h4>`
+             },i*10)
+             if (i===10){
+                 setTimeout(()=>{
+                     loading_text[0].innerText = "加载成功"
+                 },1000)
+             }
+
+         }*/
+
+
+        setTimeout(() => {
+            $("#loading").css("display", "none")
+            $(".center").css("display", "inline")
+        }, 0)
+
+    })
+</script>
+
+</html>

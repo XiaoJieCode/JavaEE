@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新闻浏览页
+    </title>
+
+    <script src="./js/jquery-1.8.0.js"></script>
+    <script src="./js/news-util.js"></script>
+    <style>
+        #app {
+            display: flex;
+        }
+
+
+        .left {
+            flex: 2;
+        }
+
+        .center {
+            flex: 6;
+        }
+
+        .right {
+            flex: 2;
+        }
+
+        body {
+            font: 16px/28px 'Microsoft YaHei';
+        }
+
+        h1 ,h2{
+            /* 文字不加粗 */
+
+            /* 让h1里面的文字水平居中对齐 */
+            text-align: center;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        .gray {
+            color: #888888;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .search {
+            color: #666;
+            /* #666666     #666
+           #ff00ff    #f0f */
+            width: 100px;
+        }
+
+        .btn {
+            font-weight: 700;
+        }
+
+        p {
+            /* 首行缩进2个字的距离 */
+            text-indent: 2em;
+        }
+
+        image {
+            /* 想要图片居中对齐,则是让它的父亲 p标签添加 水平居中的代码 */
+            text-align: center;
+        }
+
+        .footer {
+            color: #888888;
+            font-size: 12px;
+        }
+
+
+    </style>
+
+</head>
+
+<body>
+<br>
+<br>
+
+<div id="app">
+    <div class="left"></div>
+
+    <div class="center">
+        <div id="news">
+            <h1 id="newsTitle">
+
+            </h1>
+            <div class="gray">
+                发布时间：
+                <releaseTime id="releaseTime"></releaseTime>&nbsp;&nbsp;&nbsp;
+                作者：<a id="authorHref" href="#">
+                <author id="author"></author>
+            </a>
+                <!-- <input type="text" value="请输入查询条件..." class="search"> <button class="btn">搜索</button> -->
+            </div>
+            <hr>
+            <content id="newsContent">
+
+            </content>
+            <p class="footer">
+                来源：
+                <newsSource id="source">
+                </newsSource>&nbsp; &nbsp; &nbsp;
+                责任编辑：
+                <editor id="editor"></editor>
+            </p>
+        </div>
+    </div>
+    <div class="right"></div>
+</div>
+
+</body>
+<script>
+    $(function () {
+        $.ajax({
+            url: "/news/" + getUrlParam("newsId"),
+            method: "GET",
+            success: function (res) {
+                if (res === undefined) {
+                    $("#content")[0].innerHTML = "<h1 style='color: red'>ERROR</h1>"
+                    return
+                }
+                let data = res.data
+                // console.log(data);
+                $("#newsTitle")[0].innerHTML = data["newsTitle"]
+                $("#newsContent")[0].innerHTML = data["newsContent"]
+                $("#releaseTime")[0].innerHTML = formatDate(data["newsTimestamp"])
+                $("#author")[0].innerHTML = undefined
+            }
+        })
+    })
+</script>
+
+</html>

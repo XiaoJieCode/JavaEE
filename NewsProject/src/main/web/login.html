@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            height: 100%;
+        }
+
+        body {
+            height: 100%;
+        }
+
+        .container {
+            height: 100%;
+            background-image: linear-gradient(to right, #fbc2eb, #a6c1ee);
+        }
+
+        .login-wrapper {
+            background-color: #fff;
+            width: 358px;
+            height: 588px;
+            border-radius: 15px;
+            padding: 0 50px;
+            position: relative;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .header {
+            font-size: 38px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 200px;
+        }
+
+        .input-item {
+            display: block;
+            width: 100%;
+            margin-bottom: 20px;
+            border: 0;
+            padding: 10px;
+            border-bottom: 1px solid rgb(128, 125, 125);
+            font-size: 15px;
+            outline: none;
+        }
+
+        .input-item::placeholder {
+            text-transform: uppercase;
+        }
+
+        .btn {
+            text-align: center;
+            padding: 10px;
+            width: 100%;
+            margin-top: 40px;
+            background-image: linear-gradient(to right, #a6c1ee, #fbc2eb);
+            color: #fff;
+        }
+
+        .msg {
+            text-align: center;
+            line-height: 88px;
+        }
+
+        a {
+            text-decoration-line: none;
+            color: #abc1ee;
+        }
+    </style>
+
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <!-- 新 Bootstrap5 核心 CSS 文件 -->
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/5.1.1/css/bootstrap.min.css">
+
+    <!--  popper.min.js 用于弹窗、提示、下拉菜单 -->
+    <script src="https://cdn.staticfile.org/popper.js/2.9.3/umd/popper.min.js"></script>
+
+    <!-- 最新的 Bootstrap5 核心 JavaScript 文件 -->
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/5.1.1/js/bootstrap.min.js"></script>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+</head>
+<body>
+<div id="app" class="container">
+    <div id="login" class="login-wrapper">
+        <div class="header">Login</div>
+        <div class="form-wrapper">
+            <input type="text" v-model:value="username" name="username" placeholder="用户名" class="input-item">
+            <input type="password" v-model:value="password" name="password" placeholder="密码" class="input-item">
+            <div @click="login()" class="btn">登录</div>
+        </div>
+        <div class="msg">
+            没有账号？
+            <a href="javascript:void(0)" @click="toRegister()">点击注册</a>
+        </div>
+    </div>
+
+    <div id="register" style="display: none" class="login-wrapper">
+        <div class="header">Register</div>
+        <div class="form-wrapper">
+            <input type="text" v-model:value="username" name="username" placeholder="用户名" class="input-item">
+            <input type="password" v-model:value="password" name="password" placeholder="密码" class="input-item">
+            <div @click="register()" class="btn">注册</div>
+        </div>
+
+        <div class="msg">
+            已有账号？
+            <a href="javascript:void(0)" @click="toLogin()">点击登录</a>
+        </div>
+    </div>
+</div>
+<script src="./js/md5.js"></script>
+<script>
+    new Vue({
+        el: " #app",
+        data: {
+            username: "",
+            password: "",
+            isLoginPage: true
+        },
+        methods: {
+            toLogin: function () {
+                $("#register").css("display", "none")
+                $("#login").css("display", "block")
+                this.isLoginPage = true
+            },
+
+            toRegister: function () {
+                $("#login").css("display", "none")
+                $("#register").css("display", "block")
+                this.isLoginPage = false
+            },
+
+            login: function () {
+                $.ajax({
+                    method: "POST",
+                    url: "/user/login",
+                    data: ({
+                        username: this.username,
+                        password: md5(this.password)
+                    }),
+                    success:
+                        function (data) {
+                            console.log(data)
+                            let code = data['code']
+
+                            if (code === 20041 || code === 20011) {
+                                // alert("登录成功，跳转至后台页面")
+                                window.location = "/news/background.html?userId="+data['data']['userId']
+                            } else alert(data['message'])
+                        }
+                    ,
+                    error:
+                        function () {
+                            alert("登录失败")
+                        }
+                })
+
+
+
+            },
+            register: function () {
+                $.ajax({
+                    method: "PUT",
+                    url: "/user/register",
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        username: this.username,
+                        password: md5(this.password)
+                    }),
+                    success:
+                        function (data) {
+                            console.log(data)
+                            let code = data['code']
+
+                            if (code === 20041 || code === 20011) {
+                                alert("注册成功，跳转至后台页面")
+                                window.location = "/news/background.html?userId="+data['data']['userId']
+                            } else alert(data['message'])
+                        }
+                    ,
+                    error:
+                        function () {
+                            alert("注册失败")
+                        }
+                })
+            },
+
+
+        },
+        mounted() {
+
+        }
+    })
+</script>
+</body>
+</html>

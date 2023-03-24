@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>新闻编辑页</title>
+
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <!-- 新 Bootstrap5 核心 CSS 文件 -->
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/5.1.1/css/bootstrap.min.css">
+
+    <!--  popper.min.js 用于弹窗、提示、下拉菜单 -->
+    <script src="https://cdn.staticfile.org/popper.js/2.9.3/umd/popper.min.js"></script>
+
+    <!-- 最新的 Bootstrap5 核心 JavaScript 文件 -->
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/5.1.1/js/bootstrap.min.js"></script>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+
+    <!-- 引入主题css文件 -->
+    <link href="https://cdn.quilljs.com/1.0.0/quill.snow.css" rel="stylesheet">
+
+    <!-- 引入js文件 -->
+    <script src="https://cdn.quilljs.com/1.0.0/quill.js"></script>
+
+</head>
+<body>
+<div id="app">
+    <div class="container-fluid mt-3">
+        <div>
+            <h1>新闻编辑页</h1>
+        </div>
+        <label class="">
+            新闻标题：
+            <input class="form-control" placeholder="输入新闻标题" v-model:value="newsTitle">
+        </label><br>
+        <label>
+            新闻简介：
+            <input class="form-control" placeholder="输入新闻描述" v-model:value="newsDesc">
+        </label>
+        <!--        <label>-->
+        <!--            新闻简介：-->
+        <!--            <input class="form-control" placeholder="输入新闻描述" v-model:value="content">-->
+        <!--        </label>-->
+        <br>
+        <div>
+            新闻内容：
+        </div>
+        <!--                <div id="toolbar"></div>-->
+        <div id="editor">
+
+        </div>
+        <div id="footer">
+            <button class="btn btn-info" @click="preview()">预览</button>
+            <button class="btn btn-success" @click="submit()">提交</button>
+            <button class="btn btn-danger" @click="reset()">重置</button>
+            <button class="btn btn-danger" @click="returnBackground()">返回后台管理界面</button>
+        </div>
+    </div>
+
+
+</div>
+
+<!--富文本编辑器-->
+<script src="../js/news-util.js"></script>
+<script>
+    const vm = new Vue({
+        el: "#app",
+        data: {
+            newsTitle: "",
+            newsDesc: "",
+            newsContent: "",
+            userId: "",
+            newsId: undefined,
+            quill: undefined,
+
+        },
+        computed: {
+            // content() {
+            //     // return $("ql-editor")[0].innerHTML
+            //     return
+            // }
+        },
+        methods: {
+            initPage: function () {
+                // 初始化页面数据,如果传入newsId怎么代表更新已存在的新闻
+                let newsId = this.newsId = getUrlParam("newsId")
+                console.log(newsId)
+                if (newsId === undefined || newsId===null) {
+                    return
+                } else {
+                    $.ajax({
+                        method: "GET",
+                        url: "/news/" + newsId,
+                        success: (result) => {
+                            console.log(result)
+                            let code = result['code']
+                            if (code === 20041) {
+                                let data = result['data']
+                                // console.log(data)
+                                $(".ql-editor")[0].innerHTML = data['newsContent']
+                                // console.log(this)
+                                this.newsDesc = data['newsDesc']
+                                this.newsTitle = data['newsTitle']
+                            } else {
+                                console.log("该新闻已不存在，请返回页面")
+                            }
+
+                        }
+                    })
+                }
+            },
+            preview: function () {
+                if (confirm("确定要预览吗") === false) {
+                    return
+                }
+                let data = {
+                    "newsId": this.newsId,
+                    "newsDesc": this.newsDesc,
+                    "newsTitle": this.newsTitle,
+                    "newsContent": $(".ql-editor")[0].innerHTML,
+                }
+
+                window['newsTemp'] = data
+
+                // console.log(this.newsContent)
+                window.open("/preview.html","_block")
+            },
+            submit: function () {
+                if (confirm("确定要提交吗") === false) {
+                    return
+                }
+                let data = {
+                    "newsId": this.newsId,
+                    "newsDesc": this.newsDesc,
+                    "newsTitle": this.newsTitle,
+                    "author": this.userId,
+                    "newsContent": $(".ql-editor")[0].innerHTML,
+                }
+                // console.log(this.newsContent)
+                $.ajax({
+                    method: this.newsId === null ? "PUT" : "POST",
+                    url: "/news",
+                    contentType: "application/json",
+                    data: JSON.stringify(data),
+                    success:
+                        function (data) {
+                            console.log(data)
+                            let code = data['code']
+
+                            if (code === 20041 || code === 20011) alert("提交成功")
+                            else alert("提交失败")
+                        }
+                    ,
+                    error: function () {
+                        alert("提交失败")
+                    }
+                })
+            },
+            reset: function () {
+                if (confirm("确定要重置吗") === false) {
+                    return
+                }
+                this.initPage()
+                // console.log($(".ql-editor")[0].innerHTML)
+
+            },
+            returnBackground: function (){
+                window.location = "./background.html?userId="+this.userId
+            }
+        },
+        mounted: function () {
+            var urlParam = getUrlParam("userId");
+            this.userId = urlParam
+            // 初始化富文本编辑器
+            const toolbarOptions = [
+                ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+                ['blockquote', 'code-block'],
+
+                [{'header': 1}, {'header': 2}],               // custom button values
+                [{'list': 'ordered'}, {'list': 'bullet'}],
+                [{'script': 'sub'}, {'script': 'super'}],      // superscript/subscript
+                [{'indent': '-1'}, {'indent': '+1'}],          // outdent/indent
+                [{'direction': 'rtl'}],                         // text direction
+
+                [{'size': ['small', false, 'large', 'huge']}],  // custom dropdown
+                [{'header': [1, 2, 3, 4, 5, 6, false]}],
+
+                [{'color': []}, {'background': []}],          // dropdown with defaults from theme
+                [{'font': []}],
+                [{'align': []}],
+
+                ['clean']                                         // remove formatting button
+            ];
+            let options = {
+                // debug: 'info',
+                modules: {
+                    toolbar: toolbarOptions
+                    // toolbar: '#toolbar'
+                    // toolbar: [
+                    //     ['bold', 'italic', 'underline', 'strike'],    //加粗，斜体，下划线，删除线
+                    //     ['blockquote', 'code-block'],     //引用，代码块
+                    //     [{'header': 1}, {'header': 2}],        // 标题，键值对的形式；1、2表示字体大小
+                    //     [{'list': 'ordered'}, {'list': 'bullet'}],     //列表
+                    //     [{'script': 'sub'}, {'script': 'super'}],   // 上下标
+                    //     [{'indent': '-1'}, {'indent': '+1'}],     // 缩进
+                    //     [{'direction': 'rtl'}],             // 文本方向
+                    //     [{'size': ['small', false, 'large', 'huge']}], // 字体大小
+                    //     [{'header': [1, 2, 3, 4, 5, 6, false]}],     //几级标题
+                    //     [{'color': []}, {'background': []}],     // 字体颜色，字体背景颜色
+                    //     [{'font': []}],     //字体
+                    //     [{'align': []}],    //对齐方式
+                    //     ['clean'],    //清除字体样式
+                    //     ['image', 'video']    //上传图片、上传视频
+                    // ]
+                },
+                placeholder: 'Compose an epic...',
+                readOnly: false,
+                theme: 'snow'
+            };
+            // let container = $('#editor')[0]
+
+            this.quill = new Quill('#editor', options);
+            this.initPage()
+        },
+    })
+
+
+</script>
+
+
+</body>
+</html>
